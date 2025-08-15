@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: studybuddy-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: studybuddy
+    volumes:
+      - mongo_data:/data/db
+      - ./backend/scripts/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+
+  backend:
+    build: ./backend
+    container_name: studybuddy-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MONGODB_URI=mongodb://admin:password@mongodb:27017/studybuddy?authSource=admin
+      - JWT_SECRET=your-production-jwt-secret-change-this
+    depends_on:
+      - mongodb
+    volumes:
+      - ./backend/uploads:/app/uploads
+
+  student-app:
+    build: 
+      context: ./student-app
+      dockerfile: Dockerfile
+    container_name: studybuddy-student-app
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:3000/api
+
+  parent-app:
+    build: 
+      context: ./parent-app
+      dockerfile: Dockerfile
+    container_name: studybuddy-parent-app
+    restart: unless-stopped
+    ports:
+      - "3002:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:3000/api
+
+volumes:
+  mongo_data:
