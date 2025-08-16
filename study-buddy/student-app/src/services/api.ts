@@ -1,17 +1,18 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:3000/api";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 // 요청 인터셉터 - 토큰 자동 추가
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -23,9 +24,9 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }
@@ -33,56 +34,56 @@ api.interceptors.response.use(
 
 export const authAPI = {
   login: (email: string, password: string) =>
-    api.post('/auth/login', { email, password }),
-  
-  register: (userData: { email: string; password: string; name: string; role: string; parentId?: string }) =>
-    api.post('/auth/register', userData),
-  
-  getProfile: () =>
-    api.get('/auth/profile'),
+    api.post("/auth/login", { email, password }),
+
+  register: (userData: {
+    email: string;
+    password: string;
+    name: string;
+    role: string;
+    parentId?: string;
+    parentEmail?: string;
+  }) => api.post("/auth/register", userData),
+
+  getProfile: () => api.get("/auth/profile"),
 };
 
 export const studyPlanAPI = {
   getStudyPlans: (params?: { status?: string; date?: string }) =>
-    api.get('/study-plans', { params }),
-  
-  getStudyPlan: (id: string) =>
-    api.get(`/study-plans/${id}`),
-  
+    api.get("/study-plans", { params }),
+
+  getStudyPlan: (id: string) => api.get(`/study-plans/${id}`),
+
   updateStatus: (id: string, status: string) =>
     api.patch(`/study-plans/${id}/status`, { status }),
 };
 
 export const studyRecordAPI = {
   createRecord: (formData: FormData) =>
-    api.post('/study-records', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    api.post("/study-records", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
     }),
-  
+
   getRecords: (params?: { planId?: string; date?: string }) =>
-    api.get('/study-records', { params }),
-  
-  getRecord: (id: string) =>
-    api.get(`/study-records/${id}`),
-  
+    api.get("/study-records", { params }),
+
+  getRecord: (id: string) => api.get(`/study-records/${id}`),
+
   updateRecord: (id: string, formData: FormData) =>
     api.put(`/study-records/${id}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { "Content-Type": "multipart/form-data" },
     }),
 };
 
 export const notificationAPI = {
   getNotifications: (params?: { isRead?: boolean; type?: string }) =>
-    api.get('/notifications', { params }),
-  
-  markAsRead: (id: string) =>
-    api.patch(`/notifications/${id}/read`),
-  
-  markAllAsRead: () =>
-    api.patch('/notifications/read-all'),
-  
-  getUnreadCount: () =>
-    api.get('/notifications/unread-count'),
+    api.get("/notifications", { params }),
+
+  markAsRead: (id: string) => api.patch(`/notifications/${id}/read`),
+
+  markAllAsRead: () => api.patch("/notifications/read-all"),
+
+  getUnreadCount: () => api.get("/notifications/unread-count"),
 };
 
 export default api;
